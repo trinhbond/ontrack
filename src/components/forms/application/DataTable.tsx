@@ -10,8 +10,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Box,
-  Button,
+  IconButton,
 } from "@mui/material";
 
 export default function DataTable({
@@ -88,21 +87,12 @@ export default function DataTable({
                 <TableCell align="right">{props.notes}</TableCell>
               )}
               <TableCell align="right">
-                <Button
-                  sx={{
-                    borderRadius: 32,
-                    padding: 0.4,
-                    color: "#000",
-                    textAlign: "center",
-                    width: "fit-content",
-                    "&:hover": {
-                      background: "#eaeaeb",
-                    },
-                  }}
+                <IconButton
+                  sx={{ padding: 0.75, background: "#eaeaeb" }}
                   onClick={() => toggleEdit(props.id, props)}
                 >
                   <MoreHoriz fontSize="small" />
-                </Button>
+                </IconButton>
               </TableCell>
             </TableRow>
           ))}

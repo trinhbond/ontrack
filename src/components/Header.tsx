@@ -2,7 +2,7 @@ import { useContext, useRef } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { NavLink } from "react-router-dom";
 import { Toggle, AntSwitch } from "./Toggle";
-import { Backdrop, Box, Button, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { useMouse } from "../hooks/index";
 import { Avatar } from "./Avatar";
 
@@ -13,6 +13,11 @@ export default function Header() {
   const avatarText = user?.displayName?.[0].toUpperCase();
 
   if (!user) return null;
+
+  const logOut = () => {
+    signOutUser();
+    handleClick();
+  };
 
   return (
     <Box position="sticky" top={0} zIndex={10}>
@@ -38,49 +43,55 @@ export default function Header() {
             <Avatar onClick={handleClick} alt={`${user.displayName}`}>
               {avatarText}
             </Avatar>
-            <Box>
-              <Backdrop open={clicked} onClick={handleClick} />
+            {clicked && (
               <Box
-                sx={{ background: "#fff" }}
-                position="fixed"
-                right={0}
-                top={0}
-                zIndex={40}
-                height="100%"
-                minWidth="256px"
-                width="auto"
-                display={clicked ? "block" : "none"}
-                className="divide-y-[1px]"
+                sx={{
+                  boxShadow: 3,
+                  borderRadius: 2,
+                  background: "#fff",
+                  minWidth: "225px",
+                  position: "fixed",
+                  right: "24px",
+                  top: "52px",
+                  width: "auto",
+                  zIndex: 9999,
+                  "&>*:not(:last-child)": { borderBottomWidth: 1 },
+                }}
               >
-                <Box padding={2}>
-                  <Box display="flex" alignItems="center" gap={1.5}>
+                <Box>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={1}
+                    px={1.5}
+                    pt={2}
+                  >
                     <Avatar alt={`${user.displayName}`}>{avatarText}</Avatar>
                     <Typography component="span">{user.displayName}</Typography>
                   </Box>
-                </Box>
-                <Box>
-                  <NavLink to="profile">
-                    <Box
-                      display="inline-block"
-                      width="100%"
-                      my={0.5}
-                      py={1}
-                      px={2}
-                      sx={{
-                        ":hover": {
-                          background: "#f5f5f5",
-                        },
-                      }}
-                    >
-                      Profile
-                    </Box>
-                  </NavLink>
+                  <Box mt={1} mb={0.5}>
+                    <NavLink to="profile">
+                      <Box
+                        display="inline-block"
+                        width="100%"
+                        py={1}
+                        px={1.5}
+                        sx={{
+                          ":hover": {
+                            background: "#f5f5f5",
+                          },
+                        }}
+                      >
+                        View your profile
+                      </Box>
+                    </NavLink>
+                  </Box>
                 </Box>
                 <Box>
                   <Box
                     my={0.5}
                     py={1}
-                    px={2}
+                    px={1.5}
                     display="flex"
                     justifyContent="space-between"
                     alignItems="center"
@@ -100,8 +111,9 @@ export default function Header() {
                 <Box>
                   <Button
                     variant="text"
-                    onClick={signOutUser}
+                    onClick={logOut}
                     sx={{
+                      borderRadius: 0,
                       textAlign: "start",
                       color: "#000",
                       fontWeight: 400,
@@ -109,7 +121,7 @@ export default function Header() {
                       width: "100%",
                       my: 0.5,
                       py: 1,
-                      px: 2,
+                      px: 1.5,
                       ":hover": {
                         background: "#f5f5f5",
                       },
@@ -119,7 +131,7 @@ export default function Header() {
                   </Button>
                 </Box>
               </Box>
-            </Box>
+            )}
           </Box>
         </Box>
       </Box>

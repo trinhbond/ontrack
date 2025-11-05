@@ -64,7 +64,7 @@ export default function SignupForm({
                 placeholder="Name"
                 {...register("name", {
                   pattern: {
-                    value: /^[A-Za-z]+$/i,
+                    value: /^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/,
                     message: "Name cannot have symbols or special characters",
                   },
                   required: {

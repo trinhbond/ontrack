@@ -39,6 +39,7 @@ export const createMuiTheme = () => {
       },
     },
     components: {
+      MuiIconButton: { defaultProps: { disableRipple: true } },
       MuiInputBase: {
         styleOverrides: {
           root: {

@@ -72,7 +72,14 @@ export default function DataTable({
               {width > 768 && (
                 <TableCell align="right">{props.location}</TableCell>
               )}
-              <TableCell align="right">{props.status.toUpperCase()}</TableCell>
+              <TableCell align="right">
+                <Typography
+                  component="span"
+                  className={`status ${props.status}`}
+                >
+                  {props.status.toUpperCase()}
+                </Typography>
+              </TableCell>
               {width > 768 && (
                 <TableCell align="right">
                   {props.salary > 0 && <>&#36;{props.salary}</>}

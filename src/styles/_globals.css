@@ -58,3 +58,41 @@ textarea {
 textarea:focus {
   outline: none;
 }
+
+span.status {
+  border-radius: 32px;
+  color: #fff;
+  padding: 4px 12px;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  width: auto;
+}
+
+span.status.all {
+  background: #64748b;
+}
+span.status.applied {
+  background: #3b82f6 !important;
+}
+
+span.status.screening {
+  background: #8b5cf6;
+}
+
+span.status.assessment {
+  background: #ec4899;
+}
+
+span.status.interview {
+  background: #f59e0b;
+}
+
+span.status.offer {
+  background: #10b981;
+}
+
+span.status.rejected {
+  background: #ef4444;
+}

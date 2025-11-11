@@ -1,18 +1,34 @@
-import { useContext, useRef } from "react";
+import { useContext, useRef, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { NavLink } from "react-router-dom";
 import { Toggle, AntSwitch } from "./Toggle";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Modal, Typography } from "@mui/material";
 import { useMouse } from "../hooks/index";
 import { Avatar } from "./Avatar";
+import { useForm } from "react-hook-form";
+import EditUserForm from "./forms/auth/EditUserForm";
 
 export default function Header() {
   const ref = useRef<HTMLDivElement>(null);
   const { user, signOutUser } = useContext(AuthContext);
   const { clicked, handleClick } = useMouse(ref);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const avatarText = user?.displayName?.[0].toUpperCase();
+  const { setValue } = useForm({
+    defaultValues: {
+      name: user?.displayName,
+    },
+  });
 
   if (!user) return null;
+
+  const toggleModal = () => setIsOpen(!isOpen);
+
+  const handleUserChange = () => {
+    if (!user) return;
+    setValue("name", user.displayName);
+    toggleModal();
+  };
 
   const logOut = () => {
     signOutUser();
@@ -67,24 +83,39 @@ export default function Header() {
                     pt={2}
                   >
                     <Avatar alt={`${user.displayName}`}>{avatarText}</Avatar>
-                    <Typography component="span">{user.displayName}</Typography>
+                    <Box>
+                      <Typography component="span">
+                        {user.displayName}
+                      </Typography>
+                      <Typography
+                        component="span"
+                        display="block"
+                        fontSize={12}
+                        lineHeight="10px"
+                      >
+                        {user.email}
+                      </Typography>
+                    </Box>
                   </Box>
                   <Box mt={1} mb={0.5}>
-                    <NavLink to="profile">
-                      <Box
-                        display="inline-block"
-                        width="100%"
-                        py={1}
-                        px={1.5}
-                        sx={{
-                          ":hover": {
-                            background: "#f5f5f5",
-                          },
-                        }}
-                      >
-                        View your profile
-                      </Box>
-                    </NavLink>
+                    <Button
+                      onClick={handleUserChange}
+                      sx={{
+                        borderRadius: 0,
+                        textAlign: "start",
+                        color: "#000",
+                        fontWeight: 400,
+                        display: "inline-block",
+                        width: "100%",
+                        pb: 1,
+                        px: 1.5,
+                        ":hover": {
+                          background: "#f5f5f5",
+                        },
+                      }}
+                    >
+                      Edit details
+                    </Button>
                   </Box>
                 </Box>
                 <Box>
@@ -132,6 +163,11 @@ export default function Header() {
                 </Box>
               </Box>
             )}
+            <Modal open={isOpen} onClose={toggleModal}>
+              <Box>
+                <EditUserForm onClick={handleUserChange} />
+              </Box>
+            </Modal>
           </Box>
         </Box>
       </Box>

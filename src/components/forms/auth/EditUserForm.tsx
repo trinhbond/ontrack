@@ -1,14 +1,16 @@
 import { Typography, Input, Box } from "@mui/material";
 import { updateProfile } from "firebase/auth";
-import { useContext } from "react";
+import { useContext, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { AuthContext } from "../../../context/AuthContext";
 import { ModalContentWrapper } from "../../ModalContentWrapper";
 import { FormContainer } from "../../FormContainer";
 import { BasicButton, TextButton } from "../../buttons";
+import { notify } from "../../../utils";
 
 export default function EditUserForm({ onClick }: { onClick: () => void }) {
   const { user } = useContext(AuthContext);
+  const toastId = useRef("toast");
   const {
     register,
     handleSubmit,
@@ -25,7 +27,8 @@ export default function EditUserForm({ onClick }: { onClick: () => void }) {
 
   const handleUserChange = handleSubmit(async (data) => {
     updateProfile(user, { displayName: data.name }).then(() => {
-      window.location.reload();
+      user.reload();
+      notify("Your change has been updated", "success", toastId);
     });
   });
 

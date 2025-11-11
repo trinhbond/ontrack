@@ -95,7 +95,13 @@ export default function DataTable({
               )}
               <TableCell align="right">
                 <IconButton
-                  sx={{ padding: 0.75, background: "#eaeaeb" }}
+                  sx={{
+                    padding: 0.75,
+                    background: "#eaeaeb",
+                    ":hover": {
+                      background: "#e7e7e8",
+                    },
+                  }}
                   onClick={() => toggleEdit(props.id, props)}
                 >
                   <MoreHoriz fontSize="small" />

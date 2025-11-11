@@ -18,7 +18,7 @@ export default function Home() {
   const { reset } = useForm<User>();
 
   const handleToggle = () => {
-    setToggle((toggle) => !toggle);
+    setToggle(!toggle);
     reset();
   };
 

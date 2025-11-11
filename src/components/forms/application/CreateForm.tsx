@@ -39,21 +39,17 @@ export default function CreateForm({
   const handleAddApplication = handleSubmit(async (data) => {
     if (!user) return null;
 
-    try {
-      await addDoc(collection(db, "applications", "user/", user.uid), {
-        ...data,
-        date: new Date(),
-      });
-      notify("Your application has been added", "success", toastId);
-      setIsModalOpen((isModalOpen) => !isModalOpen);
-      reset();
-    } catch (e) {
-      console.error(e);
-    }
+    await addDoc(collection(db, "applications", "user/", user.uid), {
+      ...data,
+      date: new Date(),
+    }).catch((error) => console.log(error));
+    notify("Your application has been added", "success", toastId);
+    setIsModalOpen(!isModalOpen);
+    reset();
   });
 
   const toggleModal = () => {
-    setIsModalOpen((isModalOpen) => !isModalOpen);
+    setIsModalOpen(!isModalOpen);
     reset();
   };
 

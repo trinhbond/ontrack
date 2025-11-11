@@ -25,25 +25,35 @@ export default function LoginForm({
     },
   });
 
-  const handleLogin = handleSubmit(async (data) => {
-    try {
-      await signInWithEmailAndPassword(auth, data.email, data.password).then(
-        () => {
-          //toast notification
-        }
-      );
-      reset();
-    } catch (error: unknown) {
-      if (error instanceof FirebaseError) {
-        console.log({ error });
-        if (error.code === "auth/invalid-credential") {
-          setError("email", {
-            type: "custom",
-            message: "Email or password is invalid",
-          });
-        }
-      }
+  const getError = (error: FirebaseError) => {
+    switch (error.code) {
+      case "auth/invalid-credential":
+        setError("email", {
+          type: "custom",
+          message: "Email or password is invalid",
+        });
+        break;
+      case "auth/invalid-email":
+        setError("email", {
+          type: "custom",
+          message: "Email is invalid",
+        });
+        break;
+      default:
+        console.error("An unexpected Firebase error occurred:", error.message);
     }
+  };
+
+  const handleLogin = handleSubmit(async (data) => {
+    await signInWithEmailAndPassword(auth, data.email, data.password)
+      .then(() => {
+        //toast notification
+        reset();
+      })
+      .catch((error) => {
+        console.log(error.code + ": " + error.message);
+        getError(error);
+      });
   });
 
   return (

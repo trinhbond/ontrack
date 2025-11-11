@@ -46,10 +46,10 @@ export default function Content() {
       props.status.includes(statusValues[statusIndex])
     );
   } else {
-    filteredData = data;
+    filteredData = data.sort((a, b) => b.date - a.date);
   }
 
-  const toggleModal = () => setShowModal((showModal) => !showModal);
+  const toggleModal = () => setShowModal(!showModal);
 
   useEffect(() => {
     const fetchApplications = async () => {

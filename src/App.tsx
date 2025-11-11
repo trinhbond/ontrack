@@ -22,7 +22,7 @@ export default function App() {
             <Routes>
               <Route element={<Layout />}>
                 <Route path="/" index element={<Home />} />
-                <Route path="profile" element={<Profile />} />
+                {/* <Route path="profile" element={<Profile />} /> */}
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

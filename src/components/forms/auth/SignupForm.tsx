@@ -14,6 +14,7 @@ export default function SignupForm({
   const {
     register,
     handleSubmit,
+    setError,
     reset,
     control,
     formState: { errors },
@@ -25,27 +26,46 @@ export default function SignupForm({
     },
   });
 
+  const getError = (error: FirebaseError) => {
+    switch (error.code) {
+      case "auth/invalid-credential":
+        setError("email", {
+          type: "custom",
+          message: "Email or password is invalid",
+        });
+        break;
+      case "auth/invalid-email":
+        setError("email", {
+          type: "custom",
+          message: "Email is invalid",
+        });
+        break;
+      case "auth/email-already-in-use":
+        setError("email", {
+          type: "custom",
+          message: "This email is already in use",
+        });
+        break;
+      default:
+        console.error("An unexpected Firebase error occurred:", error.message);
+    }
+  };
+
   const handleSignup = handleSubmit(async (data) => {
-    try {
-      await createUserWithEmailAndPassword(
-        auth,
-        data.email,
-        data.password
-      ).then(() => {
+    await createUserWithEmailAndPassword(auth, data.email, data.password)
+      .then(() => {
         if (auth.currentUser)
           updateProfile(auth.currentUser, { displayName: data.name }).then(
             () => {
               //toast notification
             }
           );
+        reset();
+      })
+      .catch((error) => {
+        console.log(error.code + ": " + error.message);
+        getError(error);
       });
-      reset();
-    } catch (error: unknown) {
-      console.log({ error });
-      if (error instanceof FirebaseError) {
-        console.log({ error });
-      }
-    }
   });
 
   return (

@@ -15,13 +15,13 @@ export default function Profile() {
     },
   });
 
+  const toggleModal = () => setIsOpen(!isOpen);
+
   const handleUserChange = () => {
     if (!user) return;
     setValue("name", user.displayName);
-    setIsOpen((isOpen) => !isOpen);
+    toggleModal();
   };
-
-  const closeModal = () => setIsOpen((isOpen) => !isOpen);
 
   if (!user) {
     return <Navigate to="/" replace />;
@@ -50,7 +50,7 @@ export default function Profile() {
         </Box>
         <BasicButton onClick={handleUserChange}>Edit</BasicButton>
       </Box>
-      <Modal open={isOpen} onClose={closeModal}>
+      <Modal open={isOpen} onClose={toggleModal}>
         <Box>
           <EditUserForm onClick={handleUserChange} />
         </Box>

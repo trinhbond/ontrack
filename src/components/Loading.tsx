@@ -5,10 +5,5 @@ interface LoadingProps extends CircularProgressProps {
 }
 
 export const Loading: React.FC<LoadingProps> = ({ theme, ...props }) => (
-  <CircularProgress
-    sx={{
-      color: theme === "dark" ? "#fff" : "#000",
-    }}
-    {...props}
-  />
+  <CircularProgress color="primary" {...props} />
 );

@@ -1,272 +1,108 @@
-import { useContext, useEffect, useState } from "react";
-import { collection, onSnapshot, query, Timestamp } from "firebase/firestore";
-import { db } from "../config/firebase";
-import { PieChart } from "@mui/x-charts/PieChart";
-import { AppForm } from "../lib/form-types";
-import { AuthContext } from "../context/AuthContext";
+import { useContext } from "react";
 import { Box, styled, Typography, useTheme } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import { PieChart } from "@mui/x-charts/PieChart";
+import { legendClasses } from "@mui/x-charts/ChartsLegend";
+import { AuthContext } from "../context/AuthContext";
 import { Fallback } from "../components/Fallback";
 import { PieCenterLabel } from "../components/PieCenterLabel";
-import { legendClasses } from "@mui/x-charts/ChartsLegend";
+import { useApplications } from "../hooks";
+import { getApplicationStats } from "../lib/applicationStats";
+
+const DashboardCard = styled(Box)(({ theme }) => ({
+  flexGrow: 1,
+  background: theme.palette.background.paper,
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 8,
+  padding: 16,
+}));
+
+const CHART_SETTINGS = {
+  margin: { right: 5 },
+  height: 300,
+};
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
-  const [data, setData] = useState<AppForm[]>([]);
-  const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
+  const { applications, error, isLoading } = useApplications(user?.uid);
   const theme = useTheme();
+  const {
+    dailyCount,
+    monthlyCount,
+    percentage,
+    pieData,
+    statusCounts,
+    total,
+    weeklyCount,
+  } = getApplicationStats(applications);
+  const { applied, offer: offers, rejected } = statusCounts;
 
-  const getNumJobs = (data: AppForm[], daysCount: number) => {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - daysCount);
+  if (isLoading) return <Fallback />;
 
-    return data.filter((job) => {
-      const { seconds } = job.date_applied as Timestamp;
-      const jobDate = new Date(seconds * 1000);
-      return jobDate >= oneWeekAgo;
-    });
-  };
+  if (error) {
+    return (
+      <Box className="dashboard-container">
+        <Typography variant="h1">Unable to load dashboard</Typography>
+        <Typography>Please refresh the page and try again.</Typography>
+      </Box>
+    );
+  }
 
-  const dailyJobCount = getNumJobs(data, 1).length;
-  const weeklyJobCount = getNumJobs(data, 7).length;
-  const monthlyJobCount = getNumJobs(data, 21).length;
-
-  const total = data.length;
-  const rejected = data.filter((item) => item.status === "rejected").length;
-  const offers = data.filter((item) => item.status === "offer").length;
-  const applied = data.filter((item) => item.status === "applied").length;
-  const percentageRejected = (rejected / total) * 100;
-  const percentageApplied = (applied / total) * 100;
-  const percentageOffers = (offers / total) * 100;
-
-  const settings = {
-    margin: { right: 5 },
-    height: 300,
-  };
-
-  const pieData = [
-    {
-      label: "Rejected",
-      value: data.filter((x) => x.status === "rejected").length,
-      color: "#0088FE",
-    },
-    {
-      label: "Applied",
-      value: data.filter((x) => x.status === "applied").length,
-      color: "#00C49F",
-    },
-    {
-      label: "Interview",
-      value: data.filter((x) => x.status === "interview").length,
-      color: "#FFBB28",
-    },
-    {
-      label: "Assessment",
-      value: data.filter((x) => x.status === "assessment").length,
-      color: "#FF8042",
-    },
-    {
-      label: "Offer",
-      value: data.filter((x) => x.status === "offer").length,
-      color: "#10b981",
-    },
-    {
-      label: "Screening",
-      value: data.filter((x) => x.status === "screening").length,
-      color: "#8b5cf6",
-    },
-  ].filter((item) => item.value > 0);
-
-  useEffect(() => {
-    const fetchApplications = async () => {
-      if (!user) return null;
-
-      const q = query(collection(db, "applications", "user/", user.uid));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const docsData: any = [];
-        setIsLoadingData(true);
-        try {
-          querySnapshot.forEach((doc) => {
-            docsData.push({ id: doc.id, ...doc.data() });
-          });
-          setData(docsData);
-          setIsLoadingData(false);
-        } catch (error) {
-          console.log(error);
-        }
-      });
-
-      return () => unsubscribe();
-    };
-
-    fetchApplications();
-  }, [user]);
-
-  if (isLoadingData) return <Fallback />;
-
-  const StyledContainer = styled("div")({
-    flexGrow: 1,
-    background:
-      theme.palette.mode === "dark" ? "inherit" : theme.palette.primary.main,
-    border:
-      theme.palette.mode === "dark"
-        ? "0.5px solid #272727"
-        : "0.5px solid #e5e7eb",
-    borderRadius: 8,
-    padding: 16,
-  });
+  const dividerColor = `1px solid ${theme.palette.divider}`;
 
   return (
     <Box className="dashboard-container">
       <Box>
         <Typography variant="h1">Dashboard</Typography>
-        <Typography color="#7b7b7b">Track your applications here.</Typography>
+        <Typography color="text.secondary">
+          Track your applications here.
+        </Typography>
       </Box>
+
       <Box display="flex" flexWrap="wrap" gap={3}>
-        <StyledContainer>
+        <DashboardCard>
           <Box height={160} width={160}>
             <Typography fontWeight={500}>Total Applications</Typography>
-            <Box component="span" display="block" color="#7b7b7b">
-              {data.length}
+            <Box component="span" display="block" color="text.secondary">
+              {total}
             </Box>
           </Box>
-        </StyledContainer>
-        <StyledContainer>
-          <Typography fontWeight={500}>Applied</Typography>
-          <Box component="span" display="block" color="#7b7b7b">
-            {applied}
-          </Box>
-          <Box height={160} width={160}>
-            <PieChart
-              margin={{ left: 10, right: 10 }}
-              series={[
-                {
-                  innerRadius: "80%",
-                  data: [
-                    {
-                      id: 0,
-                      value: applied,
-                      color: "yellow",
-                    },
-                    {
-                      id: 1,
-                      value: total - applied,
-                      color: "lightyellow",
-                    },
-                  ],
-                },
-              ]}
-            >
-              <PieCenterLabel>{`${Math.round(
-                percentageApplied,
-              )}%`}</PieCenterLabel>
-            </PieChart>
-          </Box>
-        </StyledContainer>
-        <Box
-          flexGrow={1}
-          borderRadius={2}
-          padding={2}
-          sx={{
-            background:
-              theme.palette.mode === "dark"
-                ? "inherit"
-                : theme.palette.primary.main,
-            border:
-              theme.palette.mode === "dark"
-                ? "0.5px solid #272727"
-                : "0.5px solid #e5e7eb",
-          }}
-        >
-          <Box>
-            <Typography fontWeight={500}>Rejections</Typography>
-            <Box component="span" display="block" color="#7b7b7b">
-              {rejected}
-            </Box>
-            <Box
-              sx={{
-                height: 160,
-                width: 160,
-              }}
-            >
-              <PieChart
-                margin={{ left: 10, right: 10 }}
-                series={[
-                  {
-                    innerRadius: "80%",
-                    data: [
-                      {
-                        id: 0,
-                        value: rejected,
-                        color: "blue",
-                      },
-                      {
-                        id: 1,
-                        value: total - rejected,
-                        color: "lightblue",
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <PieCenterLabel>{`${Math.round(
-                  percentageRejected,
-                )}%`}</PieCenterLabel>
-              </PieChart>
-            </Box>
-          </Box>
-        </Box>
-        <Box
-          flexGrow={1}
-          borderRadius={2}
-          padding={2}
-          sx={{
-            background:
-              theme.palette.mode === "dark"
-                ? "inherit"
-                : theme.palette.primary.main,
-            border:
-              theme.palette.mode === "dark"
-                ? "0.5px solid #272727"
-                : "0.5px solid #e5e7eb",
-          }}
-        >
-          <Typography fontWeight={500}>Offers</Typography>
-          <Box component="span" display="block" color="#7b7b7b">
-            {offers == 0 ? "None" : offers}
-          </Box>
-          <Box sx={{ height: 160, width: 160 }}>
-            <PieChart
-              margin={{ left: 10, right: 10 }}
-              series={[
-                {
-                  innerRadius: "80%",
-                  data: [
-                    {
-                      id: 0,
-                      value: offers,
-                      color: "green",
-                    },
-                    {
-                      id: 1,
-                      value: total - offers,
-                      color: "lightgreen",
-                    },
-                  ],
-                },
-              ]}
-            >
-              <PieCenterLabel>{`${Math.round(
-                percentageOffers,
-              )}%`}</PieCenterLabel>
-            </PieChart>
-          </Box>
-        </Box>
+        </DashboardCard>
+        <MetricCard
+          label="Applied"
+          value={applied}
+          total={total}
+          percentage={percentage(applied)}
+          colors={[
+            theme.palette.primary.main,
+            alpha(theme.palette.primary.main, 0.14),
+          ]}
+        />
+        <MetricCard
+          label="Rejections"
+          value={rejected}
+          total={total}
+          percentage={percentage(rejected)}
+          colors={[
+            theme.palette.error.main,
+            alpha(theme.palette.error.main, 0.14),
+          ]}
+        />
+        <MetricCard
+          label="Offers"
+          value={offers}
+          total={total}
+          percentage={percentage(offers)}
+          colors={[
+            theme.palette.secondary.main,
+            alpha(theme.palette.secondary.main, 0.16),
+          ]}
+          emptyLabel="None"
+        />
       </Box>
-      <Box>
-        <Typography className="subheading" component="h2">
-          Applications by status
-        </Typography>
-        <StyledContainer>
+
+      <DashboardSection title="Applications by status">
+        <DashboardCard>
           <Box width="100%" display="inline-block">
             <PieChart
               slotProps={{
@@ -290,64 +126,108 @@ export default function Dashboard() {
                   ry: 10,
                 },
               }}
-              {...settings}
+              {...CHART_SETTINGS}
             />
           </Box>
-        </StyledContainer>
-      </Box>
-      <Box>
-        <Typography className="subheading" component="h2">
-          Frequency of applications
-        </Typography>
-        <StyledContainer>
+        </DashboardCard>
+      </DashboardSection>
+
+      <DashboardSection title="Frequency of applications">
+        <DashboardCard>
           <Box display="flex" justifyItems="space-evenly" gap={2}>
-            <Box
-              display="inline-block"
-              padding={2}
-              width="100%"
-              sx={{
-                borderRight:
-                  theme.palette.mode === "dark"
-                    ? "0.5px solid #272727"
-                    : "0.5px solid #e5e7eb",
-              }}
-            >
-              <Typography textAlign="center" fontSize={24} fontWeight={500}>
-                {dailyJobCount}
-              </Typography>
-              <Typography className="job-num-count-label" component="span">
-                Today
-              </Typography>
-            </Box>
-            <Box
-              display="inline-block"
-              padding={2}
-              width="100%"
-              sx={{
-                borderRight:
-                  theme.palette.mode === "dark"
-                    ? "0.5px solid #272727"
-                    : "0.5px solid #e5e7eb",
-              }}
-            >
-              <Typography className="job-num-count">
-                {weeklyJobCount}
-              </Typography>
-              <Typography className="job-num-count-label" component="span">
-                This week
-              </Typography>
-            </Box>
-            <Box display="inline-block" padding={2} width="100%">
-              <Typography className="job-num-count">
-                {monthlyJobCount}
-              </Typography>
-              <Typography className="job-num-count-label" component="span">
-                This month
-              </Typography>
-            </Box>
+            <FrequencyItem
+              count={dailyCount}
+              label="Today"
+              borderRight={dividerColor}
+            />
+            <FrequencyItem
+              count={weeklyCount}
+              label="This week"
+              borderRight={dividerColor}
+            />
+            <FrequencyItem count={monthlyCount} label="This month" />
           </Box>
-        </StyledContainer>
+        </DashboardCard>
+      </DashboardSection>
+    </Box>
+  );
+}
+
+type MetricCardProps = {
+  label: string;
+  value: number;
+  total: number;
+  percentage: number;
+  colors: [string, string];
+  emptyLabel?: string;
+};
+
+function MetricCard({
+  colors,
+  emptyLabel,
+  label,
+  percentage,
+  total,
+  value,
+}: MetricCardProps) {
+  return (
+    <DashboardCard>
+      <Typography fontWeight={500}>{label}</Typography>
+      <Box component="span" display="block" color="text.secondary">
+        {value === 0 && emptyLabel ? emptyLabel : value}
       </Box>
+      <Box height={160} width={160}>
+        <PieChart
+          margin={{ left: 10, right: 10 }}
+          series={[
+            {
+              innerRadius: "80%",
+              data: [
+                { id: 0, value, color: colors[0] },
+                { id: 1, value: total - value, color: colors[1] },
+              ],
+            },
+          ]}
+        >
+          <PieCenterLabel>{`${Math.round(percentage)}%`}</PieCenterLabel>
+        </PieChart>
+      </Box>
+    </DashboardCard>
+  );
+}
+
+function DashboardSection({
+  children,
+  title,
+}: {
+  children: React.ReactNode;
+  title: string;
+}) {
+  return (
+    <Box>
+      <Typography className="subheading" component="h2">
+        {title}
+      </Typography>
+      {children}
+    </Box>
+  );
+}
+
+function FrequencyItem({
+  borderRight,
+  count,
+  label,
+}: {
+  borderRight?: string;
+  count: number;
+  label: string;
+}) {
+  return (
+    <Box display="inline-block" padding={2} width="100%" sx={{ borderRight }}>
+      <Typography className="job-num-count">{count}</Typography>
+      <Typography className="job-num-count-label" component="span">
+        {label}
+      </Typography>
     </Box>
   );
 }

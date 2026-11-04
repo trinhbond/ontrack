@@ -3,55 +3,46 @@ import {
   PaletteMode,
   ThemeProvider as MuiThemeProvider,
 } from "@mui/material/styles";
-import React, { ReactNode, useEffect, useState } from "react";
-import { globalTheme, themePalette } from "../styles/globalTheme";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
+import { getThemePalette, globalTheme } from "../styles/globalTheme";
 
 type ThemeContextType = {
-  mode: PaletteMode;
-  setMode: React.Dispatch<React.SetStateAction<PaletteMode>>;
   toggleMode: () => void;
 };
 
 export const ThemeContext = React.createContext<ThemeContextType>({
-  mode: "light",
-  setMode: () => {},
   toggleMode: () => {},
 });
 
 export const ThemeProvider = ({ children }: { children?: ReactNode }) => {
-  const [mode, setMode] = useState<PaletteMode>(
-    localStorage.getItem("themeMode") as PaletteMode,
-  );
+  const [mode, setMode] = useState<PaletteMode>(() => {
+    const savedMode = localStorage.getItem("themeMode");
+    if (savedMode === "light" || savedMode === "dark") return savedMode;
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
 
   const toggleMode = () =>
-    setMode((mode) => (mode === "light" ? "dark" : "light"));
+    setMode((currentMode) => (currentMode === "light" ? "dark" : "light"));
 
   useEffect(() => {
     localStorage.setItem("themeMode", mode);
-    const root = document.documentElement;
-
-    if (mode === "dark") {
-      root.classList.remove("dark");
-    } else {
-      root.classList.add("dark");
-    }
+    document.documentElement.classList.toggle("dark", mode === "dark");
   }, [mode]);
 
+  const theme = useMemo(
+    () =>
+      createTheme(globalTheme, {
+        palette: getThemePalette(mode),
+      }),
+    [mode],
+  );
+
   return (
-    <ThemeContext.Provider value={{ mode, setMode, toggleMode }}>
-      <MuiThemeProvider
-        theme={(theme) =>
-          createTheme({
-            ...globalTheme,
-            palette: {
-              mode: mode === "light" ? "dark" : "light",
-              ...themePalette,
-            },
-          })
-        }
-      >
-        {children}
-      </MuiThemeProvider>
+    <ThemeContext.Provider value={{ toggleMode }}>
+      <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>
     </ThemeContext.Provider>
   );
 };

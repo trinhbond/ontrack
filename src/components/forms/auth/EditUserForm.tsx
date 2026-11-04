@@ -1,109 +1,171 @@
-import { Typography, Box, useTheme } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { updateProfile } from "firebase/auth";
-import { useContext, useRef } from "react";
+import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { AuthContext } from "../../../context/AuthContext";
-import { ModalContentWrapper } from "../../ModalContentWrapper";
-import { FormContainer } from "../../FormContainer";
-import { BaseButton, TextButton } from "../../buttons";
+import {
+  uploadProfilePhoto,
+  validateProfilePhoto,
+} from "../../../lib/profilePhoto";
 import { toastMessage } from "../../../utils";
+import { Avatar } from "../../Avatar";
+import { FormContainer } from "../../FormContainer";
 import { TextInput } from "../../TextInput";
+import { BaseButton, TextButton } from "../../buttons";
+import FormDrawer from "../FormDrawer";
+import FormField from "../FormField";
+import PhotoInput from "../PhotoInput";
 
-export default function EditUserForm({ onClick }: { onClick: () => void }) {
+type EditUserFormProps = {
+  onClose: () => void;
+  open: boolean;
+};
+
+export default function EditUserForm({ onClose, open }: EditUserFormProps) {
   const { user } = useContext(AuthContext);
   const toastId = useRef("toast");
-  const theme = useTheme();
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoError, setPhotoError] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const {
-    register,
-    handleSubmit,
-    setValue,
-    getValues,
     control,
-    formState: { errors },
-  } = useForm({
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<{ name: string }>({
     defaultValues: {
-      name: user?.displayName,
-      photoURL: user?.photoURL || " ",
+      name: user?.displayName ?? "",
     },
   });
-  const { name: username } = getValues();
+
+  useEffect(() => {
+    if (open) reset({ name: user?.displayName ?? "" });
+  }, [open, reset, user?.displayName]);
+
+  useEffect(() => {
+    if (!photo) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(photo);
+    setPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [photo]);
 
   if (!user) return null;
 
+  const avatarText = (user.displayName || "Ontrack user")
+    .charAt(0)
+    .toUpperCase();
+
+  function closeForm() {
+    setPhoto(null);
+    setPhotoError("");
+    onClose();
+  }
+
+  function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+    const validationError = validateProfilePhoto(file);
+    if (validationError) {
+      setPhoto(null);
+      setPhotoError(validationError);
+      return;
+    }
+
+    setPhotoError("");
+    setPhoto(file);
+  }
+
   const handleUserChange = handleSubmit(async (data) => {
-    updateProfile(user, { displayName: data.name }).then(() => {
-      user.reload();
-      toastMessage("Your change has been updated", "success", toastId);
-    });
+    try {
+      let photoURL = user.photoURL;
+
+      if (photo) {
+        photoURL = await uploadProfilePhoto(user.uid, photo);
+      }
+
+      await updateProfile(user, {
+        displayName: data.name,
+        photoURL,
+      });
+      await user.reload();
+      toastMessage("Your profile has been updated", "success", toastId);
+      closeForm();
+    } catch {
+      toastMessage("Unable to update your profile", "error", toastId);
+    }
   });
 
   return (
-    <ModalContentWrapper
-      boxShadow={1}
-      width={{ xs: "100%", sm: "384px", md: "384px", lg: "384px" }}
+    <FormDrawer
+      open={open}
+      onClose={closeForm}
+      eyebrow="Account"
+      title="Edit profile"
+      description="Update how you appear across your Ontrack workspace."
     >
-      <Box fontSize={20} fontWeight={500} mb={3}>
-        Edit details
-      </Box>
       <FormContainer className="edit-user-form" onSubmit={handleUserChange}>
-        <Box display="flex" flexDirection="column">
-          <Box component="label">Name</Box>
+        <FormField label="Profile photo" error={photoError} optional>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Avatar
+              src={previewUrl ?? user.photoURL ?? undefined}
+              alt={user.displayName ?? "Profile photo"}
+              sx={(theme) => ({
+                width: theme.spacing(8),
+                height: theme.spacing(8),
+                fontSize: theme.typography.pxToRem(22),
+                cursor: "default",
+              })}
+            >
+              {avatarText}
+            </Avatar>
+            <Stack spacing={0.75} flexGrow={1}>
+              <PhotoInput onChange={handlePhotoChange} />
+              <Typography color="text.secondary" fontSize="0.7rem">
+                JPG, PNG, or WebP. Maximum 5 MB.
+              </Typography>
+            </Stack>
+          </Stack>
+        </FormField>
+
+        <FormField label="Display name" error={errors.name?.message}>
           <Controller
             control={control}
-            name={"name"}
-            render={() => (
+            name="name"
+            render={({ field }) => (
               <TextInput
-                error={!!errors.name}
-                {...register("name", {
-                  pattern: {
-                    value: /^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/,
-                    message: "Name cannot have symbols or special characters",
-                  },
-                  required: {
-                    value: true,
-                    message: "Name is required",
-                  },
-                })}
-                value={username}
-                onChange={(e) =>
-                  setValue("name", e.target.value, { shouldValidate: true })
-                }
+                {...field}
+                placeholder="Your name"
+                error={Boolean(errors.name)}
               />
             )}
+            rules={{
+              pattern: {
+                value: /^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/,
+                message: "Use letters, numbers, and spaces only",
+              },
+              required: "Name is required",
+            }}
           />
-          {errors.name && (
-            <Typography component="p" role="alert">
-              {errors.name.message}
-            </Typography>
-          )}
-        </Box>
-        <Box display="flex" flexDirection="column">
-          <Box component="label">Name</Box>
-          <Controller
-            control={control}
-            name={"photoURL"}
-            render={() => (
-              <input
-                type="file"
-                onChange={(e) =>
-                  setValue("photoURL", e.target.files, { shouldValidate: true })
-                }
-              />
-            )}
-          />
-          {errors.name && (
-            <Typography component="p" role="alert">
-              {errors.name.message}
-            </Typography>
-          )}
-        </Box>
-        <Box>
-          <BaseButton type="submit">Confirm</BaseButton>
-          <Box display="inline-block" ml={1} paddingX={1} paddingY={2}>
-            <TextButton onClick={onClick}>Cancel</TextButton>
-          </Box>
-        </Box>
+        </FormField>
+
+        <Stack
+          direction={{ xs: "column-reverse", sm: "row" }}
+          justifyContent="flex-end"
+          gap={1}
+        >
+          <TextButton type="button" onClick={closeForm}>
+            Cancel
+          </TextButton>
+          <BaseButton type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Saving…" : "Save profile"}
+          </BaseButton>
+        </Stack>
       </FormContainer>
-    </ModalContentWrapper>
+    </FormDrawer>
   );
 }

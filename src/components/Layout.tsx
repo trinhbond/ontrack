@@ -3,7 +3,6 @@ import { Navigate, Outlet } from "react-router-dom";
 import Header from "./Header";
 import { AuthContext } from "../context/AuthContext";
 import { GlobalStyles } from "@mui/material";
-import { ThemeProvider } from "../context/ThemeContext";
 
 export default function Layout() {
   const { user } = useContext(AuthContext);
@@ -11,7 +10,7 @@ export default function Layout() {
   if (!user) return <Navigate to="/" replace />;
 
   return (
-    <ThemeProvider>
+    <>
       <Header />
       <Outlet />
       <GlobalStyles
@@ -28,6 +27,6 @@ export default function Layout() {
           },
         })}
       />
-    </ThemeProvider>
+    </>
   );
 }

@@ -1,22 +1,9 @@
 import { TypeOptions, toast } from "react-toastify";
-import { Id } from "react-toastify/dist/types";
-import { AppForm } from "./lib/form-types";
-
-export const handleChange = (
-  event: React.ChangeEvent<
-    HTMLTextAreaElement | HTMLSelectElement | HTMLInputElement
-  >,
-  data: any,
-  setData: React.Dispatch<React.SetStateAction<AppForm>>,
-) => {
-  const { name, value } = event.target;
-  setData({ ...data, [name]: value });
-};
 
 export const toastMessage = (
   message: string,
   type: TypeOptions,
-  toastId: React.RefObject<Id | null>,
+  toastId: React.RefObject<string | number | null>,
 ) => {
   if (!toast.isActive(toastId.current || "")) {
     toast(message, {
@@ -29,13 +16,3 @@ export const toastMessage = (
     });
   }
 };
-
-export const statusValues = [
-  "all",
-  "applied",
-  "interview",
-  "offer",
-  "rejected",
-  "screening",
-  "assessment",
-];

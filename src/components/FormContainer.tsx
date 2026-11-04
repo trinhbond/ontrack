@@ -14,7 +14,7 @@ export const FormContainer: React.FC<FormContainerProps> = ({
       component="form"
       display="flex"
       flexDirection="column"
-      gap={2}
+      gap={2.5}
       {...props}
     >
       {children}

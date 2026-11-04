@@ -1,7 +1,5 @@
 import Box from "@mui/material/Box";
 import { Loading } from "./Loading";
-import { useContext } from "react";
-import { ThemeContext } from "../context/ThemeContext";
 import { useTheme } from "@mui/material";
 
 export const Fallback = () => {

@@ -1,99 +1,76 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap");
+
+:root {
+  --color-forest: #1d4f00;
+  --color-green: #75c544;
+  --color-mint: #9cdd75;
+  --color-cyan: #14e9fe;
+  --color-bg: #f4f8f1;
+  --color-surface: #ffffff;
+  --color-text: #15370d;
+  --color-muted: #4d6447;
+  --color-on-accent: #ffffff;
+  --color-border: rgba(29, 79, 0, 0.16);
+  --color-soft-green: rgba(117, 197, 68, 0.16);
+  --color-soft-mint: rgba(156, 221, 117, 0.24);
+  --color-soft-cyan: rgba(20, 233, 254, 0.18);
+  --color-error: #b42318;
+  --color-error-soft: #fce8e6;
+}
+
+html.dark {
+  --color-forest: #75c544;
+  --color-bg: #0e2406;
+  --color-surface: #15370d;
+  --color-text: #f4f8f1;
+  --color-muted: #b9dda8;
+  --color-on-accent: #15370d;
+  --color-border: rgba(156, 221, 117, 0.24);
+  --color-soft-green: rgba(117, 197, 68, 0.18);
+  --color-soft-mint: rgba(156, 221, 117, 0.16);
+  --color-soft-cyan: rgba(20, 233, 254, 0.14);
+  --color-error: #ff8a80;
+  --color-error-soft: rgba(255, 138, 128, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
 
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: "DM Sans", sans-serif;
   font-size: 14px;
-  margin: 0;
-  padding: 0;
+  color: var(--color-text);
+  background: var(--color-bg);
 }
 
 p[role="alert"] {
-  color: #dc2626;
+  color: var(--color-error);
   margin-top: 4px;
 }
 
-h1 {
-  font-weight: 600;
-  font-size: 26px;
+img {
+  display: block;
+  max-width: 100%;
 }
 
-a,
-button {
-  cursor: pointer;
+.MuiModal-root {
+  backdrop-filter: blur(5px);
 }
 
-button,
-button.MuiButtonBase-root {
-  box-shadow: none;
-  line-height: normal;
-  min-width: auto;
-  text-transform: none;
+.MuiModal-backdrop {
+  background: rgba(14, 36, 6, 0.62) !important;
 }
 
-textarea,
-input,
-.MuiInputBase-input.MuiInput-input,
-.MuiSelect-select.MuiSelect-outlined.MuiInputBase-input.MuiOutlinedInput-input {
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 400;
-  padding: 8px 16px;
-}
-
-textarea {
-  resize: none;
-  min-height: 150px;
-}
-
-textarea:focus {
-  outline: none;
-}
-
-span.status {
-  border-radius: 32px;
-  color: #fff;
-  padding: 4px 12px;
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  width: auto;
-}
-
-span.status.all {
-  background: #64748b;
-}
-span.status.applied {
-  background: #3b82f6;
-}
-
-span.status.screening {
-  background: #8b5cf6;
-}
-
-span.status.assessment {
-  background: #ec4899;
-}
-
-span.status.interview {
-  background: #f59e0b;
-}
-
-span.status.offer {
-  background: #10b981;
-}
-
-span.status.rejected {
-  background: #ef4444;
-}
-
-.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
-.MuiOutlinedInput-notchedOutline {
-  border: none !important;
-}
-
-div.css-oltlld-MuiResponsiveChart-container {
-  width: 100%;
+.Toastify__toast {
+  border-radius: 12px;
+  font-family: "DM Sans", sans-serif;
 }

@@ -2,10 +2,7 @@ import { styled } from "@mui/material";
 import { useDrawingArea } from "@mui/x-charts";
 
 const StyledText = styled("text")(({ theme }) => ({
-  fill:
-    theme.palette.mode === "dark"
-      ? theme.palette.primary.main
-      : theme.palette.secondary.main,
+  fill: theme.palette.text.primary,
   textAnchor: "middle",
   dominantBaseline: "central",
   fontSize: 24,

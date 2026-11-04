@@ -7,7 +7,7 @@
 }
 
 .dashboard-container .job-num-count-label {
-  color: #7b7b7b;
+  color: var(--color-muted);
   display: block;
   text-align: center;
 }

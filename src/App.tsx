@@ -1,34 +1,28 @@
 import {
   BrowserRouter as Router,
+  Navigate,
   Route,
   Routes,
-  Navigate,
 } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Fallback } from "./components/Fallback";
-import { Applications, Dashboard, GetStarted } from "./pages";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { createTheme, ThemeProvider } from "@mui/material";
-import { globalTheme, themePalette } from "./styles/globalTheme";
+import { ThemeProvider } from "./context/ThemeContext";
 
 const Layout = lazy(() => import("./components/Layout"));
 const Home = lazy(() => import("./pages/Home"));
+const Applications = lazy(() => import("./pages/Applications"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const GetStarted = lazy(() => import("./pages/GetStarted"));
 
 export default function App() {
   return (
     <Suspense fallback={<Fallback />}>
-      <ThemeProvider
-        theme={createTheme({
-          ...globalTheme,
-          palette: {
-            ...themePalette,
-          },
-        })}
-      >
+      <ThemeProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <AuthProvider>
             <Router>

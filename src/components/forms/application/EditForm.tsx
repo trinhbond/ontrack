@@ -1,258 +1,253 @@
 import {
   Box,
+  Button,
   MenuItem,
-  Modal,
   Select,
   SelectChangeEvent,
-  Typography,
-  useTheme,
+  Stack,
 } from "@mui/material";
-import { AppForm } from "../../../lib/form-types";
-import { useForm } from "react-hook-form";
-import { deleteDoc, doc, Timestamp, updateDoc } from "firebase/firestore";
-import { db } from "../../../config/firebase";
-import { handleChange, toastMessage, statusValues } from "../../../utils";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { useContext, useRef } from "react";
-import { AuthContext } from "../../../context/AuthContext";
-import { TextArea } from "../../TextArea";
-import { ModalContentWrapper } from "../../ModalContentWrapper";
-import { FormContainer } from "../../FormContainer";
-import { TextButton, BaseButton } from "../../buttons";
-import { TextInput } from "../../TextInput";
 import { DatePicker } from "@mui/x-date-pickers";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import dayjs from "dayjs";
+import { deleteDoc, doc, DocumentData, updateDoc } from "firebase/firestore";
+import {
+  ChangeEvent,
+  FormEvent,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { db } from "../../../config/firebase";
+import { AuthContext } from "../../../context/AuthContext";
+import {
+  APPLICATION_STATUSES,
+  AppForm,
+  EMPTY_APPLICATION,
+  formatStatus,
+  getApplicationDate,
+} from "../../../lib/applications";
+import { toastMessage } from "../../../utils";
+import { FormContainer } from "../../FormContainer";
+import { TextArea } from "../../TextArea";
+import { TextInput } from "../../TextInput";
+import { BaseButton, TextButton } from "../../buttons";
+import FormDrawer from "../FormDrawer";
+import FormField, { fieldControlSx } from "../FormField";
 
-export default function EditForm({
-  data,
-  prevData,
-  setPrevData,
-  setShowSelectedData,
-  showSelectedData = false,
-}: {
-  data: AppForm[];
-  prevData: AppForm;
-  setPrevData: React.Dispatch<React.SetStateAction<AppForm>>;
-  setShowSelectedData: React.Dispatch<React.SetStateAction<any>>;
-  showSelectedData: any;
-}) {
+type EditFormProps = {
+  application: AppForm | null;
+  onClose: () => void;
+};
+
+export default function EditForm({ application, onClose }: EditFormProps) {
   const { user } = useContext(AuthContext);
-  const { reset } = useForm<AppForm>();
+  const [draft, setDraft] = useState<AppForm>(EMPTY_APPLICATION);
+  const [isSaving, setIsSaving] = useState(false);
   const toastId = useRef("toast");
-  const theme = useTheme();
-  const { seconds } = prevData.date_applied as Timestamp;
-  const dateValue = dayjs(new Date(seconds * 1000));
 
-  const handleEditApplication = (
-    id: string,
-    event: React.BaseSyntheticEvent,
-  ) => {
+  useEffect(() => {
+    if (application) setDraft(application);
+  }, [application]);
+
+  const applicationId = application?.id;
+  const isValid = Boolean(draft.company.trim() && draft.title.trim());
+
+  function handleFieldChange(
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
+    const { name, value } = event.target;
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      [name]: name === "salary" ? Number(value) : value,
+    }));
+  }
+
+  function handleStatusChange(event: SelectChangeEvent) {
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      status: event.target.value as AppForm["status"],
+    }));
+  }
+
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    setPrevData(prevData);
+    if (!user || !applicationId || !isValid) return;
 
-    if (!user) return null;
+    setIsSaving(true);
+    try {
+      await updateDoc(
+        doc(db, "applications", "user/", user.uid, applicationId),
+        draft as DocumentData,
+      );
+      toastMessage("Your application has been updated", "success", toastId);
+      onClose();
+    } catch {
+      toastMessage("Unable to update your application", "error", toastId);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!user || !applicationId) return;
 
     try {
-      if (!prevData.company.trim() || !prevData.title.trim()) {
-        return;
-      }
-      updateDoc(doc(db, "applications", "user/", user.uid, id), {
-        ...prevData,
-      });
-      toastMessage("Your application has been updated", "success", toastId);
-      setShowSelectedData({});
-    } catch (e) {
-      console.error(e);
+      await deleteDoc(
+        doc(db, "applications", "user/", user.uid, applicationId),
+      );
+      toastMessage("Your application has been deleted", "success", toastId);
+      onClose();
+    } catch {
+      toastMessage("Unable to delete your application", "error", toastId);
     }
-  };
-
-  const handleDelete = (id: string) => {
-    if (!user) return;
-    deleteDoc(doc(db, "applications", "user/", user.uid, id));
-    toastMessage("Your application has been deleted", "success", toastId);
-  };
-
-  const handleToggle = () => {
-    setShowSelectedData({});
-    reset();
-  };
+  }
 
   return (
-    <>
-      {data.map((props, index) => (
-        <Modal
-          open={showSelectedData[props.id] || false}
-          onClose={handleToggle}
-          key={index}
+    <FormDrawer
+      open={Boolean(application)}
+      onClose={onClose}
+      eyebrow="Application details"
+      title="Update application"
+      description="Keep the role, status, and next steps current as the process moves forward."
+    >
+      <FormContainer className="edit-form" onSubmit={handleSubmit}>
+        <FormField
+          label="Role"
+          error={!draft.title.trim() ? "Role is required" : undefined}
         >
-          <ModalContentWrapper
-            boxShadow={1}
-            width={{ xs: "100%", sm: 384, md: 384, lg: 384 }}
+          <TextInput
+            error={!draft.title.trim()}
+            placeholder="Role"
+            name="title"
+            value={draft.title}
+            onChange={handleFieldChange}
+          />
+        </FormField>
+
+        <FormField
+          label="Company"
+          error={!draft.company.trim() ? "Company is required" : undefined}
+        >
+          <TextInput
+            error={!draft.company.trim()}
+            placeholder="Company"
+            name="company"
+            value={draft.company}
+            onChange={handleFieldChange}
+          />
+        </FormField>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            gap: 2,
+          }}
+        >
+          <FormField label="Location" optional>
+            <TextInput
+              placeholder="Remote or city"
+              name="location"
+              value={draft.location ?? ""}
+              onChange={handleFieldChange}
+            />
+          </FormField>
+          <FormField label="Date applied">
+            <DatePicker
+              format="DD/MM/YYYY"
+              value={dayjs(getApplicationDate(draft.date_applied))}
+              disabled
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  sx: fieldControlSx,
+                },
+              }}
+            />
+          </FormField>
+        </Box>
+
+        <FormField label="Status">
+          <Select
+            name="status"
+            value={draft.status}
+            onChange={handleStatusChange}
+            displayEmpty
+            fullWidth
+            sx={fieldControlSx}
           >
-            <Box component="div" fontSize={20} fontWeight={500} mb={3}>
-              Edit application
-            </Box>
-            <FormContainer
-              className="edit-form"
-              onSubmit={(event) => handleEditApplication(props.id, event)}
-            >
-              <Box display="flex" flexDirection="column" gap={0.5}>
-                <Box component="label">Role</Box>
-                <TextInput
-                  error={!prevData.title.trim()}
-                  placeholder="Role"
-                  name="title"
-                  id="title"
-                  value={prevData.title}
-                  onChange={(event) =>
-                    handleChange(event, prevData, setPrevData)
-                  }
-                />
-                {!prevData.title.trim() && (
-                  <Typography component="p" role="alert">
-                    Title is required
-                  </Typography>
-                )}
+            <MenuItem value="">
+              <Box component="span" color="text.secondary">
+                Choose a status
               </Box>
-              <Box display="flex" flexDirection="column" gap={0.5}>
-                <Box component="label">Company</Box>
-                <TextInput
-                  error={!prevData.company.trim()}
-                  placeholder="Company"
-                  name="company"
-                  id="company"
-                  value={prevData.company}
-                  onChange={(event) =>
-                    handleChange(event, prevData, setPrevData)
-                  }
-                />
-                {!prevData.company.trim() && (
-                  <Typography component="p" role="alert">
-                    Company is required
-                  </Typography>
-                )}
+            </MenuItem>
+            {APPLICATION_STATUSES.map((status) => (
+              <MenuItem value={status} key={status}>
+                {formatStatus(status)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormField>
+
+        <FormField label="Job listing URL" optional>
+          <TextInput
+            type="url"
+            placeholder="https://"
+            name="link"
+            value={draft.link ?? ""}
+            onChange={handleFieldChange}
+          />
+        </FormField>
+
+        <FormField label="Salary" optional>
+          <TextInput
+            type="number"
+            placeholder="Annual salary"
+            name="salary"
+            value={draft.salary || ""}
+            startAdornment={
+              <Box component="span" color="text.secondary" mr={1}>
+                $
               </Box>
-              <Box display="flex" flexDirection="column" gap={0.5}>
-                <Box component="label">Location</Box>
-                <TextInput
-                  placeholder="Location"
-                  name="location"
-                  id="location"
-                  value={prevData.location}
-                  onChange={(event) =>
-                    handleChange(event, prevData, setPrevData)
-                  }
-                />
-              </Box>
-              <Box display="flex" flexDirection="column" gap={0.5}>
-                <Box component="label">Date</Box>
-                <DatePicker format="DD/MM/YYYY" value={dateValue} disabled />
-              </Box>
-              <Box display="flex" flexDirection="column" gap={0.5}>
-                <Box component="label">Status</Box>
-                <Select
-                  name="status"
-                  id="status"
-                  value={prevData.status}
-                  onChange={(event: SelectChangeEvent) => {
-                    const { name, value } = event.target;
-                    setPrevData({ ...prevData, [name]: value });
-                  }}
-                  displayEmpty
-                  defaultValue=""
-                  sx={{
-                    border:
-                      theme.palette.mode === "dark"
-                        ? "0.5px solid #272727"
-                        : "0.5px solid #e5e7eb",
-                    background:
-                      theme.palette.mode === "dark"
-                        ? "inherit"
-                        : theme.palette.primary.main,
-                    ":focus": { border: "none" },
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  {statusValues.slice(1).map((option) => (
-                    <MenuItem value={option} key={option}>
-                      {option.slice(0, 1).toUpperCase() + option.substring(1)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Box>
-              <Box display="flex" flexDirection="column" gap={0.5}>
-                <Box component="label">Link</Box>
-                <TextInput
-                  placeholder="Link"
-                  name="link"
-                  id="link"
-                  value={prevData.link}
-                  onChange={(event) =>
-                    handleChange(event, prevData, setPrevData)
-                  }
-                />
-              </Box>
-              <Box display="flex" flexDirection="column" gap={0.5}>
-                <Box component="label">Salary</Box>
-                <TextInput
-                  type="number"
-                  placeholder="Salary"
-                  name="salary"
-                  id="salary"
-                  value={prevData.salary}
-                  onChange={(event) =>
-                    handleChange(event, prevData, setPrevData)
-                  }
-                />
-              </Box>
-              <Box display="flex" flexDirection="column" gap={0.5}>
-                <Box component="label">Notes</Box>
-                <TextArea
-                  style={{
-                    border:
-                      theme.palette.mode === "dark"
-                        ? "0.5px solid #272727"
-                        : "0.5px solid #e5e7eb",
-                    background:
-                      theme.palette.mode === "dark"
-                        ? "inherit"
-                        : theme.palette.primary.main,
-                  }}
-                  placeholder="Notes"
-                  name="notes"
-                  id="notes"
-                  value={prevData.notes}
-                  onChange={(event) =>
-                    handleChange(event, prevData, setPrevData)
-                  }
-                />
-              </Box>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                flexWrap="wrap"
-                alignItems="center"
-                gap={1}
-              >
-                <Box>
-                  <BaseButton type="submit">Confirm</BaseButton>
-                  <Box display="inline-block" ml={1} paddingX={1} paddingY={2}>
-                    <TextButton onClick={handleToggle}>Cancel</TextButton>
-                  </Box>
-                </Box>
-                <BaseButton
-                  startIcon={<DeleteIcon fontSize="small" />}
-                  onClick={() => handleDelete(prevData.id)}
-                >
-                  Delete
-                </BaseButton>
-              </Box>
-            </FormContainer>
-          </ModalContentWrapper>
-        </Modal>
-      ))}
-    </>
+            }
+            onChange={handleFieldChange}
+          />
+        </FormField>
+
+        <FormField label="Notes" optional>
+          <TextArea
+            placeholder="Add context, contacts, or next steps"
+            name="notes"
+            value={draft.notes}
+            onChange={handleFieldChange}
+          />
+        </FormField>
+
+        <Stack
+          direction={{ xs: "column-reverse", sm: "row" }}
+          justifyContent="space-between"
+          gap={1}
+          pt={1}
+        >
+          <Button
+            type="button"
+            color="error"
+            startIcon={<DeleteOutlineRoundedIcon />}
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
+          <Stack direction={{ xs: "column-reverse", sm: "row" }} gap={1}>
+            <TextButton type="button" onClick={onClose}>
+              Cancel
+            </TextButton>
+            <BaseButton type="submit" disabled={!isValid || isSaving}>
+              {isSaving ? "Saving…" : "Save changes"}
+            </BaseButton>
+          </Stack>
+        </Stack>
+      </FormContainer>
+    </FormDrawer>
   );
 }

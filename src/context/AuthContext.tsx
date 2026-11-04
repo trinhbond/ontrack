@@ -2,11 +2,16 @@ import { createContext, useState, useEffect, ReactNode } from "react";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "../config/firebase";
 
-export const AuthContext = createContext({
-  user: {} as User | null,
-  setUser: (_user: User | null) => {},
-  signOutUser: () => {},
-  loading: true as boolean,
+type AuthContextValue = {
+  user: User | null;
+  signOutUser: () => Promise<void>;
+  loading: boolean;
+};
+
+export const AuthContext = createContext<AuthContextValue>({
+  user: null,
+  signOutUser: async () => {},
+  loading: true,
 });
 
 export const AuthProvider = ({ children }: { children?: ReactNode }) => {
@@ -22,13 +27,12 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     return unsubscribe;
   }, []);
 
-  const signOutUser = () => {
-    signOut(auth);
-    setUser(null);
+  const signOutUser = async () => {
+    await signOut(auth);
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, signOutUser, loading }}>
+    <AuthContext.Provider value={{ user, signOutUser, loading }}>
       {loading ? null : children}
     </AuthContext.Provider>
   );

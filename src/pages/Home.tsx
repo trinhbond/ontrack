@@ -3,12 +3,11 @@ import { BaseButton } from "../components/buttons";
 import { Link, Navigate } from "react-router-dom";
 import { useWindowDimensions } from "../hooks";
 import { AuthContext } from "../context/AuthContext";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 
 export default function Home() {
   const { width } = useWindowDimensions();
   const { user } = useContext(AuthContext);
-  const theme = useTheme();
 
   if (user) {
     return <Navigate to="/applications" replace />;
@@ -16,33 +15,13 @@ export default function Home() {
 
   return (
     <Box
-      height="100dvh"
       sx={{
         color: "text.primary",
         backgroundColor: "background.default",
         overflowY: "auto",
+        height: "100dvh",
       }}
     >
-      <Box className="header" position="fixed" top={0} zIndex={1} width="100%">
-        <Box
-          component="header"
-          padding="24px 48px"
-          sx={{ backgroundColor: "background.default" }}
-        >
-          <Box width={125} margin="auto">
-            <Box
-              component="img"
-              sx={{ userSelect: "none" }}
-              src={
-                theme.palette.mode === "dark"
-                  ? "/assets/ontrack_white.png"
-                  : "/assets/ontrack.png"
-              }
-              alt="Ontrack graphic"
-            />
-          </Box>
-        </Box>
-      </Box>
       {width >= 1200 ? (
         <Box
           className="relative"
@@ -104,7 +83,7 @@ export default function Home() {
         <Box
           className="relative"
           textAlign="center"
-          padding="96px 0px 24px 0px"
+          padding="48px 0px 48px 0px"
         >
           <Box
             maxWidth={750}

@@ -44,13 +44,17 @@ export default function CreateForm({
   const handleAddApplication = handleSubmit(async (data) => {
     if (!user) return null;
 
-    await addDoc(collection(db, "applications", "user/", user.uid), {
-      ...data,
-      date_applied: date?.toDate(),
-    }).catch((error) => console.log(error));
-    toastMessage("Your application has been added", "success", toastId);
-    setIsModalOpen(!isModalOpen);
-    reset();
+    try {
+      await addDoc(collection(db, "applications", "user/", user.uid), {
+        ...data,
+        date_applied: date?.toDate(),
+      });
+      toastMessage("Your application has been added", "success", toastId);
+      setIsModalOpen(false);
+      reset();
+    } catch {
+      toastMessage("Unable to add your application", "error", toastId);
+    }
   });
 
   const toggleModal = () => {
@@ -243,11 +247,6 @@ export default function CreateForm({
                   <Input
                     sx={{ ...inputCSS }}
                     type="number"
-                    // slotProps={{
-                    //   input: {
-                    //     step: "0.01",
-                    //   },
-                    // }}
                     placeholder="Salary"
                     {...register("salary")}
                   />

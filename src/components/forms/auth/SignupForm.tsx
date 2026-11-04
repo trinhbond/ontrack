@@ -1,7 +1,9 @@
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { Controller, useForm } from "react-hook-form";
-import { auth } from "../../../config/firebase";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { auth, storage } from "../../../config/firebase";
 import { FirebaseError } from "firebase/app";
+import { toast } from "react-toastify";
 import {
   Box,
   FormControl,
@@ -14,6 +16,13 @@ import {
 import { FormContainer } from "../../FormContainer";
 import { BaseButton, TextButton } from "../../buttons";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+
+type SignupFormValues = {
+  name: string;
+  email: string;
+  password: string;
+  photo?: FileList;
+};
 
 export default function SignupForm({
   handleToggle,
@@ -30,8 +39,8 @@ export default function SignupForm({
     setError,
     reset,
     control,
-    formState: { errors },
-  } = useForm({
+    formState: { errors, isSubmitting },
+  } = useForm<SignupFormValues>({
     defaultValues: {
       name: "",
       email: "",
@@ -66,21 +75,48 @@ export default function SignupForm({
   };
 
   const handleSignup = handleSubmit(async (data) => {
-    await createUserWithEmailAndPassword(auth, data.email, data.password)
-      .then(() => {
-        if (auth.currentUser)
-          updateProfile(auth.currentUser, { displayName: data.name }).then(
-            () => {
-              //toast notification
-              window.location.href = "/applications";
-            },
+    try {
+      const { user } = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password,
+      );
+      const image = data.photo?.[0];
+      let photoURL: string | undefined;
+
+      if (image) {
+        try {
+          const uploadedImage = await uploadBytes(
+            ref(storage, `profile-images/${user.uid}`),
+            image,
+            { contentType: image.type },
           );
-        reset();
-      })
-      .catch((error) => {
-        console.log(error.code + ": " + error.message);
-        getError(error);
+          photoURL = await getDownloadURL(uploadedImage.ref);
+        } catch (error) {
+          console.error("Unable to upload the profile image:", error);
+          toast.error(
+            "Your account was created, but the profile image could not be uploaded.",
+          );
+        }
+      }
+
+      await updateProfile(user, {
+        displayName: data.name,
+        ...(photoURL ? { photoURL } : {}),
       });
+      reset();
+      window.location.href = "/applications";
+    } catch (error) {
+      if (error instanceof FirebaseError) {
+        getError(error);
+      } else {
+        console.error("Unable to create the account:", error);
+        setError("root.server", {
+          type: "custom",
+          message: "Unable to create your account. Please try again.",
+        });
+      }
+    }
   });
 
   return (
@@ -207,8 +243,41 @@ export default function SignupForm({
           )}
         </FormControl>
       </Box>
+      <FormControl>
+        <Box component="label" htmlFor="signup-photo" mb={0.5}>
+          Profile image (optional)
+        </Box>
+        <Input
+          id="signup-photo"
+          type="file"
+          error={!!errors.photo}
+          inputProps={{ accept: "image/*" }}
+          {...register("photo", {
+            validate: (files) => {
+              const image = files?.[0];
+              if (!image) return true;
+              if (!image.type.startsWith("image/"))
+                return "Please choose an image file";
+              if (image.size > 5 * 1024 * 1024)
+                return "Image must be 5 MB or smaller";
+              return true;
+            },
+          })}
+        />
+        {errors.photo && (
+          <Typography component="p" role="alert">
+            {errors.photo.message}
+          </Typography>
+        )}
+      </FormControl>
+      {errors.root?.server && (
+        <Typography component="p" role="alert">
+          {errors.root.server.message}
+        </Typography>
+      )}
       <BaseButton
         type="submit"
+        disabled={isSubmitting}
         sx={{
           fontWeight: 600,
           fontSize: 18,

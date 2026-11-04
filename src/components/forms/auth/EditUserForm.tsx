@@ -23,6 +23,7 @@ export default function EditUserForm({ onClick }: { onClick: () => void }) {
   } = useForm({
     defaultValues: {
       name: user?.displayName,
+      photoURL: user?.photoURL || " ",
     },
   });
   const { name: username } = getValues();
@@ -66,6 +67,26 @@ export default function EditUserForm({ onClick }: { onClick: () => void }) {
                 value={username}
                 onChange={(e) =>
                   setValue("name", e.target.value, { shouldValidate: true })
+                }
+              />
+            )}
+          />
+          {errors.name && (
+            <Typography component="p" role="alert">
+              {errors.name.message}
+            </Typography>
+          )}
+        </Box>
+        <Box display="flex" flexDirection="column">
+          <Box component="label">Name</Box>
+          <Controller
+            control={control}
+            name={"photoURL"}
+            render={() => (
+              <input
+                type="file"
+                onChange={(e) =>
+                  setValue("photoURL", e.target.files, { shouldValidate: true })
                 }
               />
             )}

@@ -36,7 +36,7 @@ export default function DataTable({
               <TableCell className="optional-table-cell">Location</TableCell>
               <TableCell>Status</TableCell>
               <TableCell className="optional-table-cell">Salary</TableCell>
-              <TableCell>Applied</TableCell>
+              <TableCell>Date</TableCell>
               <TableCell width={48} />
             </TableRow>
           </TableHead>

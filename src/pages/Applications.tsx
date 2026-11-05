@@ -159,7 +159,11 @@ export default function Applications() {
           </Paper>
         </Box>
 
-        <Paper className="applications-panel" elevation={0}>
+        <Paper
+          className="applications-panel"
+          elevation={0}
+          sx={{ overflowX: "auto" }}
+        >
           <Stack
             direction={{ xs: "column", sm: "row" }}
             justifyContent="space-between"

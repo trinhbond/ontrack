@@ -313,7 +313,8 @@
 }
 
 .company-name,
-.role-name {
+.role-name,
+.role-date {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

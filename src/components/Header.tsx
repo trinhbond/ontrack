@@ -299,7 +299,15 @@ export default function Header() {
 
         <MenuItem onClick={openProfile} sx={{ py: 1.25 }}>
           <ListItemIcon>
-            <PersonOutlineRoundedIcon fontSize="small" />
+            <PersonOutlineRoundedIcon
+              fontSize="small"
+              sx={{
+                color:
+                  theme.palette.mode === "dark"
+                    ? theme.palette.primary.light
+                    : theme.palette.primary.dark,
+              }}
+            />
           </ListItemIcon>
           Edit profile
         </MenuItem>
@@ -310,7 +318,15 @@ export default function Header() {
           sx={{ py: 0.75, cursor: "default" }}
         >
           <ListItemIcon>
-            <DarkModeOutlinedIcon fontSize="small" />
+            <DarkModeOutlinedIcon
+              fontSize="small"
+              sx={{
+                color:
+                  theme.palette.mode === "dark"
+                    ? theme.palette.primary.light
+                    : theme.palette.primary.dark,
+              }}
+            />
           </ListItemIcon>
           <Typography flexGrow={1}>Dark mode</Typography>
           <Switch
@@ -318,7 +334,11 @@ export default function Header() {
             size="small"
             checked={theme.palette.mode === "dark"}
             onChange={toggleMode}
-            inputProps={{ "aria-label": "Toggle dark mode" }}
+            slotProps={{
+              input: {
+                "aria-label": "Toggle dark mode",
+              },
+            }}
           />
         </MenuItem>
 

@@ -1,5 +1,5 @@
-import { Input, InputProps, styled } from "@mui/material"
-import { alpha } from "@mui/material/styles"
+import { Input, InputProps, styled } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 
 const StyledPhotoInput = styled(Input)(({ theme }) => ({
   width: "100%",
@@ -19,6 +19,7 @@ const StyledPhotoInput = styled(Input)(({ theme }) => ({
   },
   "& input": {
     cursor: "pointer",
+    height: "auto",
   },
   "& input::file-selector-button": {
     marginRight: theme.spacing(1.5),
@@ -31,7 +32,7 @@ const StyledPhotoInput = styled(Input)(({ theme }) => ({
     fontWeight: 700,
     cursor: "pointer",
   },
-}))
+}));
 
 export default function PhotoInput(props: InputProps) {
   return (
@@ -40,5 +41,5 @@ export default function PhotoInput(props: InputProps) {
       inputProps={{ accept: "image/*", ...props.inputProps }}
       {...props}
     />
-  )
+  );
 }

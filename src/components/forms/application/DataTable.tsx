@@ -14,6 +14,7 @@ import {
   TablePagination,
   TableRow,
   Typography,
+  useTheme,
 } from "@mui/material";
 
 export default function DataTable({
@@ -25,6 +26,7 @@ export default function DataTable({
 }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const theme = useTheme();
 
   return (
     <>
@@ -62,12 +64,12 @@ export default function DataTable({
                         label={application.status || "No status"}
                       />
                     </TableCell>
-                    <TableCell className="optional-table-cell">
+                    <TableCell className="role-name">
                       {application.salary > 0
                         ? `$${Number(application.salary).toLocaleString()}`
                         : "—"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="role-date">
                       {Number.isNaN(appliedDate.getTime())
                         ? "—"
                         : appliedDate.toLocaleDateString("en-NZ", {
@@ -80,6 +82,12 @@ export default function DataTable({
                         size="small"
                         aria-label={`Edit ${application.title} at ${application.company}`}
                         onClick={() => onEdit(application)}
+                        sx={{
+                          color:
+                            theme.palette.mode === "dark"
+                              ? theme.palette.primary.light
+                              : theme.palette.primary.dark,
+                        }}
                       >
                         <EditOutlinedIcon fontSize="small" />
                       </IconButton>

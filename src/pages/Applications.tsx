@@ -7,6 +7,7 @@ import {
   Stack,
   TextField,
   Typography,
+  useTheme,
 } from "@mui/material";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
@@ -39,6 +40,7 @@ export default function Applications() {
     useState<AppForm | null>(null);
   const [status, setStatus] = useState<ApplicationFilter>("all");
   const [search, setSearch] = useState("");
+  const theme = useTheme();
 
   const filteredData = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -186,7 +188,15 @@ export default function Applications() {
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchRoundedIcon fontSize="small" />
+                      <SearchRoundedIcon
+                        fontSize="small"
+                        sx={{
+                          color:
+                            theme.palette.mode === "dark"
+                              ? theme.palette.primary.light
+                              : theme.palette.primary.dark,
+                        }}
+                      />
                     </InputAdornment>
                   ),
                 },

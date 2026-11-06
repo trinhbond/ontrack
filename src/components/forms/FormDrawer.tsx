@@ -1,15 +1,22 @@
-import { Box, Drawer, IconButton, Stack, Typography } from "@mui/material"
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded"
-import { alpha } from "@mui/material/styles"
+import {
+  Box,
+  Drawer,
+  IconButton,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { alpha } from "@mui/material/styles";
 
 type FormDrawerProps = {
-  children: React.ReactNode
-  description: string
-  eyebrow: string
-  onClose: () => void
-  open: boolean
-  title: string
-}
+  children: React.ReactNode;
+  description: string;
+  eyebrow: string;
+  onClose: () => void;
+  open: boolean;
+  title: string;
+};
 
 export default function FormDrawer({
   children,
@@ -19,6 +26,8 @@ export default function FormDrawer({
   open,
   title,
 }: FormDrawerProps) {
+  const theme = useTheme();
+
   return (
     <Drawer
       anchor="right"
@@ -78,11 +87,18 @@ export default function FormDrawer({
             aria-label="Close form"
             sx={{ alignSelf: "flex-start" }}
           >
-            <CloseRoundedIcon />
+            <CloseRoundedIcon
+              sx={{
+                color:
+                  theme.palette.mode === "dark"
+                    ? theme.palette.primary.light
+                    : theme.palette.primary.dark,
+              }}
+            />
           </IconButton>
         </Stack>
       </Box>
       <Box sx={{ p: { xs: 2.5, sm: 4 } }}>{children}</Box>
     </Drawer>
-  )
+  );
 }

@@ -2,16 +2,16 @@ import {
   APPLICATION_STATUSES,
   AppForm,
   getApplicationDate,
-} from "./applications"
+} from "./applications";
 
-const STATUS_COLORS: Record<typeof APPLICATION_STATUSES[number], string> = {
+const STATUS_COLORS: Record<(typeof APPLICATION_STATUSES)[number], string> = {
   rejected: "#B42318",
   applied: "#1D4F00",
   interview: "#14E9FE",
   assessment: "#9CDD75",
   offer: "#75C544",
   screening: "#4D6447",
-}
+};
 
 export function getApplicationStats(applications: AppForm[]) {
   const statusCounts = Object.fromEntries(
@@ -20,9 +20,9 @@ export function getApplicationStats(applications: AppForm[]) {
       applications.filter((application) => application.status === status)
         .length,
     ]),
-  ) as Record<typeof APPLICATION_STATUSES[number], number>
+  ) as Record<(typeof APPLICATION_STATUSES)[number], number>;
 
-  const total = applications.length
+  const total = applications.length;
 
   return {
     total,
@@ -36,14 +36,14 @@ export function getApplicationStats(applications: AppForm[]) {
       value: statusCounts[status],
       color: STATUS_COLORS[status],
     })).filter(({ value }) => value > 0),
-  }
+  };
 }
 
 function countApplicationsSince(applications: AppForm[], days: number) {
-  const threshold = new Date()
-  threshold.setDate(threshold.getDate() - days)
+  const threshold = new Date();
+  threshold.setDate(threshold.getDate() - days);
 
   return applications.filter(
     (application) => getApplicationDate(application.date_applied) >= threshold,
-  ).length
+  ).length;
 }

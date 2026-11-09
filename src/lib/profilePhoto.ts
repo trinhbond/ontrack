@@ -1,16 +1,16 @@
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
-import { storage } from "../config/firebase"
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "../config/firebase";
 
-export const MAX_PROFILE_PHOTO_SIZE = 5 * 1024 * 1024
+export const MAX_PROFILE_PHOTO_SIZE = 5 * 1024 * 1024;
 
 export function validateProfilePhoto(file: File) {
   if (!file.type.startsWith("image/")) {
-    return "Choose a JPG, PNG, WebP, or another image file."
+    return "Choose a JPG, PNG, WebP, or another image file.";
   }
   if (file.size > MAX_PROFILE_PHOTO_SIZE) {
-    return "Profile photos must be smaller than 5 MB."
+    return "Profile photos must be smaller than 5 MB.";
   }
-  return ""
+  return "";
 }
 
 export async function uploadProfilePhoto(userId: string, file: File) {
@@ -18,7 +18,7 @@ export async function uploadProfilePhoto(userId: string, file: File) {
     ref(storage, `profile-images/${userId}`),
     file,
     { contentType: file.type },
-  )
+  );
 
-  return getDownloadURL(uploadedImage.ref)
+  return getDownloadURL(uploadedImage.ref);
 }

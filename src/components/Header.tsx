@@ -283,7 +283,7 @@ export default function Header() {
 
         <Divider />
 
-        {NAVIGATION_ITEMS.map((item) => (
+        {/* {NAVIGATION_ITEMS.map((item) => (
           <MenuItem
             key={item.path}
             component={NavLink}
@@ -295,7 +295,7 @@ export default function Header() {
             <ListItemIcon>{item.icon}</ListItemIcon>
             {item.label}
           </MenuItem>
-        ))}
+        ))} */}
 
         <MenuItem onClick={openProfile} sx={{ py: 1.25 }}>
           <ListItemIcon>

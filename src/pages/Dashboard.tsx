@@ -4,7 +4,7 @@ import { alpha } from "@mui/material/styles";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { legendClasses } from "@mui/x-charts/ChartsLegend";
 import { AuthContext } from "../context/AuthContext";
-import { Fallback } from "../components/Fallback";
+import { Loading } from "../components/Loading";
 import { PieCenterLabel } from "../components/PieCenterLabel";
 import { useApplications } from "../hooks";
 import { getApplicationStats } from "../lib/applicationStats";
@@ -37,7 +37,7 @@ export default function Dashboard() {
   } = getApplicationStats(applications);
   const { applied, offer: offers, rejected } = statusCounts;
 
-  if (isLoading) return <Fallback />;
+  if (isLoading) return <Loading />;
 
   if (error) {
     return (

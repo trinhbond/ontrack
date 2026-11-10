@@ -1,4 +1,4 @@
-import { FirebaseError } from "firebase/app"
+import { FirebaseError } from "firebase/app";
 
 const AUTH_ERROR_MESSAGES: Record<string, string> = {
   "auth/email-already-in-use": "This email is already in use",
@@ -14,12 +14,12 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   "auth/unauthorized-domain":
     "This preview domain is not authorized in Firebase Authentication",
   "auth/weak-password": "Password must be at least 6 characters",
-}
+};
 
 export function getAuthErrorMessage(error: unknown) {
   if (error instanceof FirebaseError) {
-    return AUTH_ERROR_MESSAGES[error.code] ?? "Authentication failed"
+    return AUTH_ERROR_MESSAGES[error.code] ?? "Authentication failed";
   }
 
-  return "Something went wrong. Please try again."
+  return "Something went wrong. Please try again.";
 }

@@ -100,6 +100,14 @@ export default function DataTable({
       </TableContainer>
       <TablePagination
         component="div"
+        sx={{
+          "& .MuiSelect-icon": {
+            color:
+              theme.palette.mode === "dark"
+                ? theme.palette.text.secondary
+                : theme.palette.primary.dark,
+          },
+        }}
         count={data.length}
         rowsPerPage={rowsPerPage}
         page={Math.min(

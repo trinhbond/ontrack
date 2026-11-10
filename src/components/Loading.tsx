@@ -1,9 +1,23 @@
-import { CircularProgress, CircularProgressProps } from "@mui/material";
+import Box from "@mui/material/Box";
+import { Spinner } from "./Spinner";
+import { useTheme } from "@mui/material";
 
-interface LoadingProps extends CircularProgressProps {
-  theme?: string | null;
-}
+export const Loading = () => {
+  const theme = useTheme();
 
-export const Loading: React.FC<LoadingProps> = ({ theme, ...props }) => (
-  <CircularProgress color="primary" {...props} />
-);
+  return (
+    <Box
+      sx={{
+        bottom: 0,
+        left: 0,
+        position: "fixed",
+        placeContent: "center",
+        right: 0,
+        textAlign: "center",
+        top: 0,
+      }}
+    >
+      <Spinner theme={theme.palette.mode} />
+    </Box>
+  );
+};

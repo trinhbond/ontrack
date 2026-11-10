@@ -25,7 +25,7 @@ import {
   CreateForm,
   EditForm,
 } from "../components/forms/application";
-import { Fallback } from "../components/Fallback";
+import { Loading } from "../components/Loading";
 import { useApplications } from "../hooks";
 import { getApplicationStats } from "../lib/applicationStats";
 
@@ -64,7 +64,7 @@ export default function Applications() {
 
   const { statusCounts, total } = getApplicationStats(data);
 
-  if (isLoading) return <Fallback />;
+  if (isLoading) return <Loading />;
 
   if (error) {
     return (

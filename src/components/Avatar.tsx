@@ -7,7 +7,7 @@ const StyledAvatar = styled(MuiAvatar)(({ theme }) => ({
   cursor: "pointer",
   height: theme.spacing(4.5),
   width: theme.spacing(4.5),
-  border: `2px solid ${alpha(theme.palette.background.paper, 0.85)}`,
+  // border: `2px solid ${alpha(theme.palette.background.paper, 0.85)}`,
   fontSize: theme.typography.pxToRem(12),
   fontWeight: 700,
   boxShadow: `0 0 0 1px ${alpha(theme.palette.text.primary, 0.08)}`,

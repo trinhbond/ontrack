@@ -4,8 +4,8 @@ import {
   SxProps,
   Theme,
   Typography,
-} from "@mui/material"
-import { alpha } from "@mui/material/styles"
+} from "@mui/material";
+import { alpha } from "@mui/material/styles";
 
 export const fieldControlSx: SxProps<Theme> = (theme) => ({
   minHeight: theme.spacing(5.5),
@@ -30,14 +30,20 @@ export const fieldControlSx: SxProps<Theme> = (theme) => ({
     borderColor: theme.palette.primary.main,
     borderWidth: 1,
   },
-})
+  "& .MuiSelect-icon": {
+    color:
+      theme.palette.mode === "dark"
+        ? theme.palette.text.secondary
+        : theme.palette.primary.dark,
+  },
+});
 
 type FormFieldProps = {
-  children: React.ReactNode
-  error?: string
-  label: string
-  optional?: boolean
-}
+  children: React.ReactNode;
+  error?: string;
+  label: string;
+  optional?: boolean;
+};
 
 export default function FormField({
   children,
@@ -69,5 +75,5 @@ export default function FormField({
       {children}
       {error && <FormHelperText error>{error}</FormHelperText>}
     </Stack>
-  )
+  );
 }

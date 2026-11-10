@@ -1,4 +1,4 @@
-import { Box, MenuItem, Select, Stack } from "@mui/material";
+import { Box, MenuItem, Select, Stack, useTheme } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { addDoc, collection } from "firebase/firestore";
 import dayjs, { Dayjs } from "dayjs";
@@ -37,6 +37,7 @@ export default function CreateForm({
   isModalOpen,
   setIsModalOpen,
 }: CreateFormProps) {
+  const theme = useTheme();
   const { user } = useContext(AuthContext);
   const [date, setDate] = useState<Dayjs | null>(dayjs());
   const toastId = useRef("toast");
@@ -121,6 +122,14 @@ export default function CreateForm({
                 textField: {
                   fullWidth: true,
                   sx: fieldControlSx,
+                },
+                openPickerButton: {
+                  sx: {
+                    color:
+                      theme.palette.mode === "dark"
+                        ? theme.palette.text.secondary
+                        : theme.palette.primary.dark,
+                  },
                 },
               }}
             />

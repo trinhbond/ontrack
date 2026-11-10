@@ -8,7 +8,7 @@ import { lazy, Suspense } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Fallback } from "./components/Fallback";
+import { Loading } from "./components/Loading";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -21,7 +21,7 @@ const GetStarted = lazy(() => import("./pages/GetStarted"));
 
 export default function App() {
   return (
-    <Suspense fallback={<Fallback />}>
+    <Suspense fallback={<Loading />}>
       <ThemeProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <AuthProvider>

@@ -95,7 +95,8 @@ export default function EditUserForm({ onClose, open }: EditUserFormProps) {
       await user.reload();
       toastMessage("Your profile has been updated", "success", toastId);
       closeForm();
-    } catch {
+    } catch (error) {
+      console.error("Unable to upload or update the profile:", error);
       toastMessage("Unable to update your profile", "error", toastId);
     }
   });
